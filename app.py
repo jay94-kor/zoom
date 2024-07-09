@@ -6,7 +6,7 @@ USER_DATA = {
     "password": "1234"
 }
 
-ZOOM_LINK = "https://your_zoom_link"
+ZOOM_LINK = "https://naver.com"
 
 # Initialize session state
 if 'logged_in' not in st.session_state:
