@@ -1,3 +1,5 @@
 streamlit
 pyperclip
 pandas
+streamlit-card
+streamlit-authenticator

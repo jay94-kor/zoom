@@ -1,4 +1,6 @@
 import streamlit as st
+from streamlit_card import card
+import streamlit_authenticator as stauth
 import pandas as pd
 import pyperclip
 from datetime import datetime
@@ -66,31 +68,59 @@ def main_layout():
         zoom_access()
 
 def login_page():
-    with st.container():
-        st.title("Login")
+    st.markdown("""
+    <style>
+    .big-font {
+        font-size:30px !important;
+        font-weight: bold;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<p class="big-font">Welcome to Zoom Access Portal</p>', unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1,2,1])
+    
+    with col2:
+        card(
+            title="Login",
+            text="Please enter your credentials",
+            image="https://static.streamlit.io/examples/dice.jpg",
+            styles={
+                "card": {
+                    "width": "100%",
+                    "height": "300px",
+                    "border-radius": "10px",
+                    "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
+                }
+            }
+        )
+
         countries = get_countries()
-        country = st.selectbox("Country", options=countries).lower()
-        name = st.text_input("Name").lower()
+        country = st.selectbox("Country", options=countries, format_func=lambda x: x.capitalize())
         
-        # 엔터 키 입력 감지를 위한 form 사용
-        with st.form(key='login_form'):
-            submit_button = st.form_submit_button(label='Login')
-        
-        if submit_button or name:  # 버튼을 클릭하거나 이름 입력 후 엔터를 누른 경우
-            if country == admin_country.lower() and name == admin_name.lower():
-                st.session_state.logged_in = True
-                st.session_state.is_admin = True
-                set_page('admin')
-                st.success("Logged in as admin!")
-                return
-            user = get_user(country, name)
-            if user:
-                st.session_state.logged_in = True
-                st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
-                set_page('zoom')
-                st.success("Logged in successfully!")
-            else:
-                st.error("Invalid country or name")
+        # 사용자 이름 입력
+        name = st.text_input("Name")
+
+        # 로그인 버튼
+        if st.button("Login", key="login_button"):
+            do_login(country.lower(), name.lower())
+
+def do_login(country, name):
+    if country == admin_country.lower() and name == admin_name.lower():
+        st.session_state.logged_in = True
+        st.session_state.is_admin = True
+        set_page('admin')
+        st.success("Logged in as admin!")
+    else:
+        user = get_user(country, name)
+        if user:
+            st.session_state.logged_in = True
+            st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
+            set_page('zoom')
+            st.success("Logged in successfully!")
+        else:
+            st.error("Invalid country or name")
 
 def admin_page():
     with st.container():
