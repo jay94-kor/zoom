@@ -134,12 +134,11 @@ def zoom_access():
             st.markdown(f"""
                 <script>
                 function copyToClipboard(text) {{
-                    const el = document.createElement('textarea');
-                    el.value = text;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
+                    navigator.clipboard.writeText(text).then(function() {{
+                        console.log('Async: Copying to clipboard was successful!');
+                    }}, function(err) {{
+                        console.error('Async: Could not copy text: ', err);
+                    }});
                 }}
                 copyToClipboard("{nickname}");
                 </script>
