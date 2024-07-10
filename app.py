@@ -71,7 +71,12 @@ def login_page():
         countries = get_countries()
         country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
-        if st.button("Login"):
+        
+        # 엔터 키 입력 감지를 위한 form 사용
+        with st.form(key='login_form'):
+            submit_button = st.form_submit_button(label='Login')
+        
+        if submit_button or name:  # 버튼을 클릭하거나 이름 입력 후 엔터를 누른 경우
             if country == admin_country.lower() and name == admin_name.lower():
                 st.session_state.logged_in = True
                 st.session_state.is_admin = True
