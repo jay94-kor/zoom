@@ -28,6 +28,8 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'user_data' not in st.session_state:
     st.session_state.user_data = None
+if 'show_zoom_info' not in st.session_state:
+    st.session_state.show_zoom_info = False
 
 def login():
     st.title("Login")
@@ -51,23 +53,34 @@ def zoom_access():
     user_data = st.session_state.user_data
     nickname = f"{user_data['country']} / {user_data['name']}"
     st.write(f"Your Zoom nickname: {nickname}")
-    st.info("Please copy and use this nickname when joining the Zoom meeting.")
 
-    st.success("Authorized! Here is your Zoom information:")
-    st.write(f"Zoom Link: {ZOOM_LINK}")
-    st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+    # Add a button to copy the nickname
+    st.markdown(f"""
+    <button onclick="navigator.clipboard.writeText('{nickname}')">
+        Copy Nickname
+    </button>
+    """, unsafe_allow_html=True)
 
-    # Display login history
-    login_history = pd.read_csv('login_history.csv')
-    user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
-    
-    if not user_history.empty:
-        first_login = user_history['login_time'].min()
-        last_login = user_history['login_time'].max()
-        st.write(f"First login: {first_login}")
-        st.write(f"Most recent login: {last_login}")
-    else:
-        st.write("This is your first login.")
+    confirmation = st.text_input("Type 'I will use my nickname to join Zoom' to confirm:")
+    if confirmation.lower() == "i will use my nickname to join zoom":
+        st.session_state.show_zoom_info = True
+
+    if st.session_state.show_zoom_info:
+        st.success("Authorized! Here is your Zoom information:")
+        st.write(f"Zoom Link: {ZOOM_LINK}")
+        st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+
+        # Display login history
+        login_history = pd.read_csv('login_history.csv')
+        user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
+        
+        if not user_history.empty:
+            first_login = user_history['login_time'].min()
+            last_login = user_history['login_time'].max()
+            st.write(f"First login: {first_login}")
+            st.write(f"Most recent login: {last_login}")
+        else:
+            st.write("This is your first login.")
 
 def main():
     if not st.session_state.logged_in:
