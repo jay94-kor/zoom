@@ -12,8 +12,14 @@ if not os.path.exists('user_database.csv'):
     })
     initial_data.to_csv('user_database.csv', index=False)
 
+# Check if login_history.csv exists, if not create it
+if not os.path.exists('login_history.csv'):
+    pd.DataFrame(columns=['country', 'name', 'login_time']).to_csv('login_history.csv', index=False)
+
 # Load user database
 USER_DB = pd.read_csv('user_database.csv')
+USER_DB['country'] = USER_DB['country'].str.lower()
+USER_DB['name'] = USER_DB['name'].str.lower()
 
 ZOOM_LINK = "https://zoom.us/j/example"
 ZOOM_PASSWORD = "123456"
@@ -26,8 +32,8 @@ if 'user_data' not in st.session_state:
 
 def login():
     st.title("Login")
-    country = st.text_input("Country")
-    name = st.text_input("Name")
+    country = st.text_input("Country").lower()
+    name = st.text_input("Name").lower()
     if st.button("Login"):
         user = USER_DB[(USER_DB['country'] == country) & (USER_DB['name'] == name)]
         if not user.empty:
@@ -35,9 +41,8 @@ def login():
             st.session_state.user_data = user.iloc[0]
             st.success("Logged in successfully!")
             
-            # Record login time
             login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            login_record = pd.DataFrame({'country': [country], 'name': [name], 'login_time': [login_time]})
+            login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time]})
             login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
         else:
             st.error("Invalid country or name")
@@ -55,6 +60,18 @@ def zoom_access():
     st.success("Authorized! Here is your Zoom information:")
     st.write(f"Zoom Link: {ZOOM_LINK}")
     st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+
+    # Display login history
+    login_history = pd.read_csv('login_history.csv')
+    user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
+    
+    if not user_history.empty:
+        first_login = user_history['login_time'].min()
+        last_login = user_history['login_time'].max()
+        st.write(f"First login: {first_login}")
+        st.write(f"Most recent login: {last_login}")
+    else:
+        st.write("This is your first login.")
 
 def main():
     if not st.session_state.logged_in:
