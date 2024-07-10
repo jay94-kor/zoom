@@ -75,7 +75,6 @@ def login_page():
                     st.success("Logged in successfully!")
                 else:
                     st.error("Invalid country or name")
-
 def admin_page():
     with st.container():
         st.title("Admin Page")
@@ -91,7 +90,22 @@ def admin_page():
             st.write(f"Attendance percentage: {attendance_percentage:.2f}%")
             
             st.write("Detailed Attendance List:")
-            st.table(report)
+            
+            # 데이터프레임 생성
+            df = pd.DataFrame(report, columns=['Country', 'Name', 'Logged In', 'Nickname Copied', 'Phrase Written', 'Zoom Link Clicked'])
+            
+            # 'Logged In'이 'No'인 행을 맨 위로 정렬
+            df = df.sort_values('Logged In', ascending=True)
+            
+            # 스타일 적용
+            def highlight_no_login(row):
+                if row['Logged In'] == 'No':
+                    return ['background-color: yellow'] * len(row)
+                return [''] * len(row)
+            
+            styled_df = df.style.apply(highlight_no_login, axis=1)
+            
+            st.dataframe(styled_df)
 
 def zoom_access():
     if not st.session_state.logged_in or st.session_state.user_data is None:

@@ -19,11 +19,14 @@ def init_db():
                   login_type TEXT NOT NULL,
                   FOREIGN KEY (user_id) REFERENCES users(id))''')
     
-        # Create login_records table
+    # Create login_records table
     c.execute('''CREATE TABLE IF NOT EXISTS login_records
                  (id INTEGER PRIMARY KEY,
                   user_id INTEGER NOT NULL,
                   login_time TEXT NOT NULL,
+                  nickname_copied INTEGER DEFAULT 0,
+                  phrase_written INTEGER DEFAULT 0,
+                  zoom_link_clicked INTEGER DEFAULT 0,
                   FOREIGN KEY (user_id) REFERENCES users(id))''')
     
     # Insert initial user data if the users table is empty
@@ -76,10 +79,12 @@ def get_attendance_report():
     conn = sqlite3.connect('zoom_app.db')
     c = conn.cursor()
     c.execute('''SELECT u.country, u.name, 
-                 CASE WHEN lr.user_id IS NOT NULL THEN 'Yes' ELSE 'No' END as attended
+                 CASE WHEN lr.user_id IS NOT NULL THEN 'Yes' ELSE 'No' END as logged_in,
+                 CASE WHEN lr.nickname_copied = 1 THEN 'Yes' ELSE 'No' END as nickname_copied,
+                 CASE WHEN lr.phrase_written = 1 THEN 'Yes' ELSE 'No' END as phrase_written,
+                 CASE WHEN lr.zoom_link_clicked = 1 THEN 'Yes' ELSE 'No' END as zoom_link_clicked
                  FROM users u
-                 LEFT JOIN (SELECT DISTINCT user_id FROM login_records) lr
-                 ON u.id = lr.user_id''')
+                 LEFT JOIN login_records lr ON u.id = lr.user_id''')
     report = c.fetchall()
     conn.close()
     return report
