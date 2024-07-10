@@ -124,14 +124,25 @@ def zoom_access():
         nickname = f"{user_data['country']} / {user_data['name']}"
         st.write(f"Your Zoom nickname: {nickname}")
 
-        if st.button("Copy Nickname"):
-            try:
-                pyperclip.copy(nickname)
-                st.success("Nickname copied to clipboard!")
-                update_nickname_copied(user_data['id'])
-            except Exception as e:
-                st.error(f"Failed to copy nickname: {str(e)}")
-                st.info("Please manually copy your nickname: " + nickname)
+        copy_button = st.button("Copy Nickname")
+        st.markdown(f"""
+        <div id="nickname" style="display:none;">{nickname}</div>
+        <script>
+        const copyButton = document.querySelector('button[kind="secondary"]:not([aria-describedby])');
+        copyButton.onclick = function() {{
+            const nickname = document.getElementById('nickname').innerText;
+            navigator.clipboard.writeText(nickname).then(function() {{
+                console.log('Copying to clipboard was successful!');
+            }}, function(err) {{
+                console.error('Could not copy text: ', err);
+            }});
+        }};
+        </script>
+        """, unsafe_allow_html=True)
+
+        if copy_button:
+            update_nickname_copied(user_data['id'])
+            st.success("Nickname copied to clipboard!")
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
