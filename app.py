@@ -2,6 +2,15 @@ import streamlit as st
 import pyperclip
 import pandas as pd
 from datetime import datetime
+import os
+
+# Check if user_database.csv exists, if not create it
+if not os.path.exists('user_database.csv'):
+    initial_data = pd.DataFrame({
+        'country': ['Korea', 'USA', 'Japan', 'China'],
+        'name': ['Dongjae', 'John', 'Yuki', 'Li Wei']
+    })
+    initial_data.to_csv('user_database.csv', index=False)
 
 # Load user database
 USER_DB = pd.read_csv('user_database.csv')
