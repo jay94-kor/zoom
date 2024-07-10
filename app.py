@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import pyperclip
 from datetime import datetime
 from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries, update_nickname_copied, update_phrase_written, update_zoom_link_clicked
 
