@@ -21,6 +21,13 @@ if 'show_zoom_info' not in st.session_state:
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
+# 앱 시작 부분에 추가
+try:
+    st.write("Admin country:", st.secrets["admin"]["country"])
+    st.write("Admin name:", st.secrets["admin"]["name"])
+except Exception as e:
+    st.error(f"Error accessing secrets: {str(e)}")
+
 def reset_session():
     for key in st.session_state.keys():
         del st.session_state[key]
@@ -68,14 +75,18 @@ def login_page():
             try:
                 admin_country = st.secrets["admin"]["country"].lower()
                 admin_name = st.secrets["admin"]["name"].lower()
+                st.write(f"Debug: Admin country: {admin_country}, Admin name: {admin_name}")
+                st.write(f"Debug: Input country: {country}, Input name: {name}")
                 if country == admin_country and name == admin_name:
                     st.session_state.logged_in = True
                     st.session_state.is_admin = True
                     set_page('admin')
                     st.success("Logged in as admin!")
                 else:
+                    st.error("Admin login failed. Trying regular user login.")
                     raise KeyError
-            except KeyError:
+            except KeyError as e:
+                st.error(f"KeyError: {str(e)}")
                 user = get_user(country, name)
                 if user:
                     st.session_state.logged_in = True
