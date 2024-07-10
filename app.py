@@ -3,6 +3,16 @@ import pandas as pd
 from datetime import datetime
 import os
 
+# Check if login_history.csv exists and has the correct structure
+if os.path.exists('login_history.csv'):
+    login_history = pd.read_csv('login_history.csv')
+    if 'login_type' not in login_history.columns:
+        login_history['login_type'] = 'Subsequent login'
+        login_history.loc[login_history.groupby(['country', 'name'])['login_time'].idxmin(), 'login_type'] = 'First login'
+        login_history.to_csv('login_history.csv', index=False)
+else:
+    pd.DataFrame(columns=['country', 'name', 'login_time', 'login_type']).to_csv('login_history.csv', index=False)
+
 # Check if user_database.csv exists, if not create it
 if not os.path.exists('user_database.csv'):
     initial_data = pd.DataFrame({
@@ -160,7 +170,7 @@ def zoom_access():
                 st.write(f"Total logins: {len(user_history)}")
             else:
                 st.write("This is your first login.")
-
+                
 def main():
     main_layout()
 
