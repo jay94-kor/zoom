@@ -55,6 +55,13 @@ def add_login_record(user_id):
     c.execute("INSERT INTO login_records (user_id, login_time) VALUES (?, ?)",
               (user_id, login_time))
     conn.commit()
+    
+    # 디버그 코드 추가
+    print(f"Login record added for user_id: {user_id} at {login_time}")
+    
+    c.execute("SELECT * FROM login_records WHERE user_id=?", (user_id,))
+    print(f"Login records for user_id {user_id}: {c.fetchall()}")
+    
     conn.close()
 
 def get_login_history(user_id):
@@ -69,10 +76,10 @@ def get_attendance_report():
     conn = sqlite3.connect('zoom_app.db')
     c = conn.cursor()
     c.execute('''SELECT u.country, u.name, 
-                 CASE WHEN lh.user_id IS NOT NULL THEN 'Yes' ELSE 'No' END as attended
+                 CASE WHEN lr.user_id IS NOT NULL THEN 'Yes' ELSE 'No' END as attended
                  FROM users u
-                 LEFT JOIN (SELECT DISTINCT user_id FROM login_history) lh
-                 ON u.id = lh.user_id''')
+                 LEFT JOIN (SELECT DISTINCT user_id FROM login_records) lr
+                 ON u.id = lr.user_id''')
     report = c.fetchall()
     conn.close()
     return report
