@@ -88,13 +88,6 @@ def login_page():
                     st.session_state.user_data = user.iloc[0].to_dict()
                     set_page('zoom')
                     st.success("Logged in successfully!")
-                    
-                    login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    login_history = pd.read_csv('login_history.csv')
-                    user_history = login_history[(login_history['country'] == country) & (login_history['name'] == name)]
-                    login_type = "First login" if user_history.empty else "Subsequent login"
-                    login_record = pd.DataFrame({'country': [country], 'name': [name], 'login_time': [login_time], 'login_type': [login_type]})
-                    login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
                 else:
                     st.error("Invalid country or name")
 
@@ -142,6 +135,14 @@ def zoom_access():
         confirmation = st.text_input("Confirmation:")
         if confirmation.lower() == "i will use my nickname to join zoom":
             st.session_state.show_zoom_info = True
+            
+            # Record login at this point
+            login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            login_history = pd.read_csv('login_history.csv')
+            user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
+            login_type = "First login" if user_history.empty else "Subsequent login"
+            login_record = pd.DataFrame({'country': [user_data['country']], 'name': [user_data['name']], 'login_time': [login_time], 'login_type': [login_type]})
+            login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
 
         if st.session_state.show_zoom_info:
             st.success("Authorized! Here is your Zoom information:")
