@@ -73,7 +73,7 @@ def login_page():
                     st.session_state.logged_in = True
                     st.session_state.is_admin = True
                     set_page('admin')
-                    st.success("관리자로 로그인했습니다!")
+                    st.success("Logged in as admin!")
                 else:
                     raise KeyError  # 일반 사용자 로그인 처리로 넘어갑니다.
             except KeyError:
@@ -82,9 +82,9 @@ def login_page():
                     st.session_state.logged_in = True
                     st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
                     set_page('zoom')
-                    st.success("로그인에 성공했습니다!")
+                    st.success("Logged in successfully!")
                 else:
-                    st.error("잘못된 국가 또는 이름입니다.")
+                    st.error("Invalid country or name")
 
 def admin_page():
     with st.container():
