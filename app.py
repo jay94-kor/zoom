@@ -65,8 +65,16 @@ def login_page():
         country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
         if st.button("Login"):
-            admin_country = st.secrets["admin"]["country"]
-            admin_name = st.secrets["admin"]["name"]
+            # 시크릿에서 어드민 정보를 가져오려고 시도합니다.
+            try:
+                admin_country = st.secrets["admin"]["country"]
+                admin_name = st.secrets["admin"]["name"]
+            except KeyError:
+                # 시크릿이 설정되지 않은 경우 기본값을 사용합니다.
+                admin_country = "korea"
+                admin_name = "dnmd"
+                st.warning("Admin credentials not found in secrets. Using default values.")
+
             if country == admin_country and name == admin_name:
                 st.session_state.logged_in = True
                 st.session_state.is_admin = True
