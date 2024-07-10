@@ -123,10 +123,27 @@ def zoom_access():
         nickname = f"{user_data['country']} / {user_data['name']}"
         st.write(f"Your Zoom nickname: {nickname}")
 
+        # Add a text area with the nickname
+        st.text_area("Nickname", value=nickname, key="nickname_area")
+
+        # Add a button to copy the nickname to clipboard
         if st.button("Copy Nickname"):
-            st.experimental_set_query_params(nickname=nickname)
             st.success("Nickname copied to clipboard!")
             update_nickname_copied(user_data['id'])
+            # JavaScript to copy the text to clipboard
+            st.markdown(f"""
+                <script>
+                function copyToClipboard(text) {{
+                    const el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                }}
+                copyToClipboard("{nickname}");
+                </script>
+                """, unsafe_allow_html=True)
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
