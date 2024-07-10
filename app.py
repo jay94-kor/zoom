@@ -124,7 +124,7 @@ def zoom_access():
         st.write(f"Your Zoom nickname: {nickname}")
 
         if st.button("Copy Nickname"):
-            pyperclip.copy(nickname)
+            st.experimental_set_query_params(nickname=nickname)
             st.success("Nickname copied to clipboard!")
             update_nickname_copied(user_data['id'])
 
