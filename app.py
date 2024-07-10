@@ -21,15 +21,15 @@ if 'show_zoom_info' not in st.session_state:
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
-# 앱 시작 부분에 추가
-try:
-    admin_country = st.secrets["admin"]["country"]
-    admin_name = st.secrets["admin"]["name"]
+# Initialize admin credentials
+admin_country = "korea"
+admin_name = "dnmd"
+
+# Check if admin credentials are set
+if admin_country and admin_name:
     st.success("Admin credentials loaded successfully.")
-except KeyError:
-    st.error("Admin credentials not found in secrets. Please set up the secrets properly.")
-    admin_country = ""
-    admin_name = ""
+else:
+    st.error("Admin credentials not set. Please set them in the code.")
 
 def reset_session():
     for key in st.session_state.keys():
@@ -75,13 +75,12 @@ def login_page():
         country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
         if st.button("Login"):
-            if admin_country and admin_name:
-                if country == admin_country.lower() and name == admin_name.lower():
-                    st.session_state.logged_in = True
-                    st.session_state.is_admin = True
-                    set_page('admin')
-                    st.success("Logged in as admin!")
-                    return
+            if country == admin_country.lower() and name == admin_name.lower():
+                st.session_state.logged_in = True
+                st.session_state.is_admin = True
+                set_page('admin')
+                st.success("Logged in as admin!")
+                return
             user = get_user(country, name)
             if user:
                 st.session_state.logged_in = True
