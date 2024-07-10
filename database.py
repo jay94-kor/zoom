@@ -95,6 +95,14 @@ def get_attendance_report():
     conn.close()
     return report
 
+def get_countries():
+    conn = sqlite3.connect('zoom_app.db')
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT country FROM users ORDER BY country")
+    countries = [row[0] for row in c.fetchall()]
+    conn.close()
+    return countries
+
 if __name__ == "__main__":
     init_db()
     print("Database initialized successfully.")

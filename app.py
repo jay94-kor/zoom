@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report
+from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries
 
 # Initialize database
 init_db()
@@ -59,7 +59,8 @@ def main_layout():
 def login_page():
     with st.container():
         st.title("Login")
-        country = st.text_input("Country").lower()
+        countries = get_countries()
+        country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
         if st.button("Login"):
             if country == "korea" and name == "dnmd":
