@@ -65,7 +65,6 @@ def login_page():
         country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
         if st.button("Login"):
-            # 시크릿에서 어드민 정보를 가져오려고 시도합니다.
             try:
                 admin_country = st.secrets["admin"]["country"].lower()
                 admin_name = st.secrets["admin"]["name"].lower()
@@ -75,7 +74,7 @@ def login_page():
                     set_page('admin')
                     st.success("Logged in as admin!")
                 else:
-                    raise KeyError  # 일반 사용자 로그인 처리로 넘어갑니다.
+                    raise KeyError
             except KeyError:
                 user = get_user(country, name)
                 if user:
