@@ -120,6 +120,11 @@ def admin_page():
             st.dataframe(attendance_list)
 
 def zoom_access():
+    if not st.session_state.logged_in or st.session_state.user_data is None:
+        st.error("Please log in first.")
+        set_page('login')
+        return
+
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
