@@ -1,5 +1,4 @@
 import streamlit as st
-import pyperclip
 import pandas as pd
 from datetime import datetime
 import os
@@ -51,11 +50,8 @@ def zoom_access():
     st.title("Zoom Link Access")
     user_data = st.session_state.user_data
     nickname = f"{user_data['country']} / {user_data['name']}"
-    st.write(f"Your Zoom nickname will be: {nickname}")
-    
-    if st.button("Copy Nickname"):
-        pyperclip.copy(nickname)
-        st.success("Nickname copied to clipboard!")
+    st.write(f"Your Zoom nickname: {nickname}")
+    st.info("Please copy and use this nickname when joining the Zoom meeting.")
 
     st.success("Authorized! Here is your Zoom information:")
     st.write(f"Zoom Link: {ZOOM_LINK}")
