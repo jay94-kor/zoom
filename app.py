@@ -1,34 +1,9 @@
 import streamlit as st
-import pandas as pd
 from datetime import datetime
-import os
+from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report
 
-# Check if login_history.csv exists and has the correct structure
-if os.path.exists('login_history.csv'):
-    login_history = pd.read_csv('login_history.csv')
-    if 'login_type' not in login_history.columns:
-        login_history['login_type'] = 'Subsequent login'
-        login_history.loc[login_history.groupby(['country', 'name'])['login_time'].idxmin(), 'login_type'] = 'First login'
-        login_history.to_csv('login_history.csv', index=False)
-else:
-    pd.DataFrame(columns=['country', 'name', 'login_time', 'login_type']).to_csv('login_history.csv', index=False)
-
-# Check if user_database.csv exists, if not create it
-if not os.path.exists('user_database.csv'):
-    initial_data = pd.DataFrame({
-        'country': ['Korea', 'USA', 'Japan', 'China'],
-        'name': ['Dongjae', 'John', 'Yuki', 'Li Wei']
-    })
-    initial_data.to_csv('user_database.csv', index=False)
-
-# Check if login_history.csv exists, if not create it
-if not os.path.exists('login_history.csv'):
-    pd.DataFrame(columns=['country', 'name', 'login_time', 'login_type']).to_csv('login_history.csv', index=False)
-
-# Load user database
-USER_DB = pd.read_csv('user_database.csv')
-USER_DB['country'] = USER_DB['country'].str.lower()
-USER_DB['name'] = USER_DB['name'].str.lower()
+# Initialize database
+init_db()
 
 ZOOM_LINK = "https://zoom.us/j/example"
 ZOOM_PASSWORD = "123456"
@@ -92,10 +67,10 @@ def login_page():
                 set_page('admin')
                 st.success("Logged in as admin!")
             else:
-                user = USER_DB[(USER_DB['country'] == country) & (USER_DB['name'] == name)]
-                if not user.empty:
+                user = get_user(country, name)
+                if user:
                     st.session_state.logged_in = True
-                    st.session_state.user_data = user.iloc[0].to_dict()
+                    st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
                     set_page('zoom')
                     st.success("Logged in successfully!")
                 else:
@@ -105,24 +80,18 @@ def admin_page():
     with st.container():
         st.title("Admin Page")
         if st.button("Show Attendance Report"):
-            user_db = pd.read_csv('user_database.csv')
-            login_history = pd.read_csv('login_history.csv')
+            report = get_attendance_report()
             
-            attended_users = login_history[['country', 'name']].drop_duplicates()
-            
-            total_users = len(user_db)
-            attended_users_count = len(attended_users)
-            attendance_percentage = (attended_users_count / total_users) * 100
+            total_users = len(report)
+            attended_users = sum(1 for r in report if r[2] == 'Yes')
+            attendance_percentage = (attended_users / total_users) * 100 if total_users > 0 else 0
             
             st.write(f"Total users: {total_users}")
-            st.write(f"Users who attended: {attended_users_count}")
+            st.write(f"Users who attended: {attended_users}")
             st.write(f"Attendance percentage: {attendance_percentage:.2f}%")
             
             st.write("Detailed Attendance List:")
-            attendance_list = user_db.merge(attended_users, on=['country', 'name'], how='left', indicator=True)
-            attendance_list['Attended'] = attendance_list['_merge'].map({'both': 'Yes', 'left_only': 'No'})
-            attendance_list = attendance_list.drop('_merge', axis=1)
-            st.dataframe(attendance_list)
+            st.table(report)
 
 def zoom_access():
     if not st.session_state.logged_in or st.session_state.user_data is None:
@@ -147,30 +116,24 @@ def zoom_access():
             st.session_state.show_zoom_info = True
             
             # Record login at this point
-            login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            login_history = pd.read_csv('login_history.csv')
-            user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
-            login_type = "First login" if user_history.empty else "Subsequent login"
-            login_record = pd.DataFrame({'country': [user_data['country']], 'name': [user_data['name']], 'login_time': [login_time], 'login_type': [login_type]})
-            login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
+            add_login_record(user_data['id'])
 
         if st.session_state.show_zoom_info:
             st.success("Authorized! Here is your Zoom information:")
             st.write(f"Zoom Link: {ZOOM_LINK}")
             st.write(f"Zoom Password: {ZOOM_PASSWORD}")
 
-            login_history = pd.read_csv('login_history.csv')
-            user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
+            login_history = get_login_history(user_data['id'])
             
-            if not user_history.empty:
-                first_login = user_history[user_history['login_type'] == 'First login']['login_time'].iloc[0]
-                last_login = user_history['login_time'].max()
+            if login_history:
+                first_login = login_history[0][0]
+                last_login = login_history[-1][0]
                 st.write(f"First login: {first_login}")
                 st.write(f"Most recent login: {last_login}")
-                st.write(f"Total logins: {len(user_history)}")
+                st.write(f"Total logins: {len(login_history)}")
             else:
                 st.write("This is your first login.")
-                
+
 def main():
     main_layout()
 
