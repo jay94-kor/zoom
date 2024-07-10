@@ -13,7 +13,7 @@ if not os.path.exists('user_database.csv'):
 
 # Check if login_history.csv exists, if not create it
 if not os.path.exists('login_history.csv'):
-    pd.DataFrame(columns=['country', 'name', 'login_time']).to_csv('login_history.csv', index=False)
+    pd.DataFrame(columns=['country', 'name', 'login_time', 'login_type']).to_csv('login_history.csv', index=False)
 
 # Load user database
 USER_DB = pd.read_csv('user_database.csv')
@@ -43,7 +43,10 @@ def login():
             st.success("Logged in successfully!")
             
             login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time]})
+            login_history = pd.read_csv('login_history.csv')
+            user_history = login_history[(login_history['country'] == user.iloc[0]['country']) & (login_history['name'] == user.iloc[0]['name'])]
+            login_type = "First login" if user_history.empty else "Subsequent login"
+            login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time], 'login_type': [login_type]})
             login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
         else:
             st.error("Invalid country or name")
@@ -58,7 +61,10 @@ def zoom_access():
     st.text_area("Your Zoom nickname (click to copy)", nickname, height=50)
     st.info("Click the text area above to select the nickname, then use Ctrl+C (or Cmd+C on Mac) to copy.")
 
-    confirmation = st.text_input("Type 'I will use my nickname to join Zoom' to confirm:")
+    st.markdown("Type the following phrase to confirm:")
+    st.markdown("**I will use my nickname to join Zoom**")
+    
+    confirmation = st.text_input("Confirmation:")
     if confirmation.lower() == "i will use my nickname to join zoom":
         st.session_state.show_zoom_info = True
 
@@ -70,12 +76,13 @@ def zoom_access():
         # Display login history
         login_history = pd.read_csv('login_history.csv')
         user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
-        
+
         if not user_history.empty:
-            first_login = user_history['login_time'].min()
+            first_login = user_history[user_history['login_type'] == 'First login']['login_time'].iloc[0]
             last_login = user_history['login_time'].max()
             st.write(f"First login: {first_login}")
             st.write(f"Most recent login: {last_login}")
+            st.write(f"Total logins: {len(user_history)}")
         else:
             st.write("This is your first login.")
 
