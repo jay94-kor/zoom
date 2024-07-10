@@ -34,10 +34,10 @@ if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
 def reset_session():
-    st.session_state.logged_in = False
-    st.session_state.user_data = None
-    st.session_state.show_zoom_info = False
-    st.session_state.is_admin = False
+    for key in st.session_state.keys():
+        del st.session_state[key]
+    st.session_state.page = 'login'
+    st.experimental_rerun()
 
 def set_page(page_name):
     st.session_state.page = page_name
@@ -50,13 +50,15 @@ if 'page' not in st.session_state:
 def sidebar():
     with st.sidebar:
         st.title("Navigation")
-        if st.session_state.logged_in:
-            if st.session_state.is_admin:
+        if st.session_state.get('logged_in', False):
+            if st.session_state.get('is_admin', False):
                 st.button("Admin Page", on_click=set_page, args=('admin',))
             else:
                 st.button("Zoom Access", on_click=set_page, args=('zoom',))
-        st.button("Logout", on_click=reset_session)
-
+            if st.button("Logout"):
+                reset_session()
+        elif st.session_state.page != 'login':
+            set_page('login')
 # Main layout
 def main_layout():
     sidebar()
