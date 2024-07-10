@@ -123,6 +123,7 @@ def main():
     if not st.session_state.logged_in:
         login()
     elif st.session_state.is_admin:
+        admin_page()
     else:
         zoom_access()
 
