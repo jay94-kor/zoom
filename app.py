@@ -85,15 +85,15 @@ def login_page():
                 user = USER_DB[(USER_DB['country'] == country) & (USER_DB['name'] == name)]
                 if not user.empty:
                     st.session_state.logged_in = True
-                    st.session_state.user_data = user.iloc[0]
+                    st.session_state.user_data = user.iloc[0].to_dict()
                     set_page('zoom')
                     st.success("Logged in successfully!")
                     
                     login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     login_history = pd.read_csv('login_history.csv')
-                    user_history = login_history[(login_history['country'] == user.iloc[0]['country']) & (login_history['name'] == user.iloc[0]['name'])]
+                    user_history = login_history[(login_history['country'] == country) & (login_history['name'] == name)]
                     login_type = "First login" if user_history.empty else "Subsequent login"
-                    login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time], 'login_type': [login_type]})
+                    login_record = pd.DataFrame({'country': [country], 'name': [name], 'login_time': [login_time], 'login_type': [login_type]})
                     login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
                 else:
                     st.error("Invalid country or name")
