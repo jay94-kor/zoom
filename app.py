@@ -122,35 +122,16 @@ def zoom_access():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
         nickname = f"{user_data['country']} / {user_data['name']}"
-        st.write(f"Your Zoom nickname: {nickname}")
-
-        # Add a text area with the nickname
-        st.text_area("Nickname", value=nickname, key="nickname_area")
-
-        # Add a button to copy the nickname to clipboard
-        if st.button("Copy Nickname"):
+        st.write("Your Zoom nickname:")
+        
+        # 닉네임을 선택 가능한 텍스트 영역으로 표시
+        st.code(nickname, language="")
+        
+        st.info("To copy your nickname, click on the text above, select all (Ctrl+A or Cmd+A), and copy (Ctrl+C or Cmd+C).")
+        
+        if st.button("I have copied my nickname"):
             update_nickname_copied(user_data['id'])
-            components.html(
-                f"""
-                <script>
-                function copyToClipboard() {{
-                    const text = "{nickname}";
-                    navigator.clipboard.writeText(text).then(
-                        function() {{
-                            console.log('Copying to clipboard was successful!');
-                            alert('Nickname copied to clipboard!');
-                        }},
-                        function(err) {{
-                            console.error('Could not copy text: ', err);
-                            alert('Failed to copy nickname. Please try again.');
-                        }}
-                    );
-                }}
-                copyToClipboard();
-                </script>
-                """,
-                height=0,
-            )
+            st.success("Great! You've confirmed that you've copied your nickname.")
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
