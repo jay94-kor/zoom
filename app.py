@@ -54,12 +54,9 @@ def zoom_access():
     nickname = f"{user_data['country']} / {user_data['name']}"
     st.write(f"Your Zoom nickname: {nickname}")
 
-    # Add a button to copy the nickname
-    st.markdown(f"""
-    <button onclick="navigator.clipboard.writeText('{nickname}')">
-        Copy Nickname
-    </button>
-    """, unsafe_allow_html=True)
+    # Add a text area with the nickname and a copy button
+    st.text_area("Your Zoom nickname (click to copy)", nickname, height=50)
+    st.info("Click the text area above to select the nickname, then use Ctrl+C (or Cmd+C on Mac) to copy.")
 
     confirmation = st.text_input("Type 'I will use my nickname to join Zoom' to confirm:")
     if confirmation.lower() == "i will use my nickname to join zoom":
