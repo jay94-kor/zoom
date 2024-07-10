@@ -122,27 +122,10 @@ def zoom_access():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
         nickname = f"{user_data['country']} / {user_data['name']}"
-        st.write(f"Your Zoom nickname: {nickname}")
-
-        copy_button = st.button("Copy Nickname")
-        st.markdown(f"""
-        <div id="nickname" style="display:none;">{nickname}</div>
-        <script>
-        const copyButton = document.querySelector('button[kind="secondary"]:not([aria-describedby])');
-        copyButton.onclick = function() {{
-            const nickname = document.getElementById('nickname').innerText;
-            navigator.clipboard.writeText(nickname).then(function() {{
-                console.log('Copying to clipboard was successful!');
-            }}, function(err) {{
-                console.error('Could not copy text: ', err);
-            }});
-        }};
-        </script>
-        """, unsafe_allow_html=True)
-
-        if copy_button:
-            update_nickname_copied(user_data['id'])
-            st.success("Nickname copied to clipboard!")
+        
+        st.write("Your Zoom nickname:")
+        st.code(nickname, language="")
+        st.info("Please copy your nickname above and use it when joining the Zoom meeting.")
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
@@ -151,6 +134,7 @@ def zoom_access():
         if confirmation.lower() == "i will use my nickname to join zoom":
             st.session_state.show_zoom_info = True
             update_phrase_written(user_data['id'])
+            update_nickname_copied(user_data['id'])  # 사용자가 닉네임을 복사했다고 가정
             
             # Record login at this point
             login_time = add_login_record(user_data['id'])
