@@ -30,26 +30,59 @@ if 'user_data' not in st.session_state:
     st.session_state.user_data = None
 if 'show_zoom_info' not in st.session_state:
     st.session_state.show_zoom_info = False
+if 'is_admin' not in st.session_state:
+    st.session_state.is_admin = False
 
 def login():
     st.title("Login")
     country = st.text_input("Country").lower()
     name = st.text_input("Name").lower()
     if st.button("Login"):
-        user = USER_DB[(USER_DB['country'] == country) & (USER_DB['name'] == name)]
-        if not user.empty:
+        if country == "korea" and name == "dnmd":
             st.session_state.logged_in = True
-            st.session_state.user_data = user.iloc[0]
-            st.success("Logged in successfully!")
-            
-            login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            login_history = pd.read_csv('login_history.csv')
-            user_history = login_history[(login_history['country'] == user.iloc[0]['country']) & (login_history['name'] == user.iloc[0]['name'])]
-            login_type = "First login" if user_history.empty else "Subsequent login"
-            login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time], 'login_type': [login_type]})
-            login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
+            st.session_state.is_admin = True
+            st.success("Logged in as admin!")
         else:
-            st.error("Invalid country or name")
+            user = USER_DB[(USER_DB['country'] == country) & (USER_DB['name'] == name)]
+            if not user.empty:
+                st.session_state.logged_in = True
+                st.session_state.user_data = user.iloc[0]
+                st.success("Logged in successfully!")
+                
+                login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                login_history = pd.read_csv('login_history.csv')
+                user_history = login_history[(login_history['country'] == user.iloc[0]['country']) & (login_history['name'] == user.iloc[0]['name'])]
+                login_type = "First login" if user_history.empty else "Subsequent login"
+                login_record = pd.DataFrame({'country': [user.iloc[0]['country']], 'name': [user.iloc[0]['name']], 'login_time': [login_time], 'login_type': [login_type]})
+                login_record.to_csv('login_history.csv', mode='a', header=False, index=False)
+            else:
+                st.error("Invalid country or name")
+
+def admin_page():
+    st.title("Admin Page")
+    
+    if st.button("Show Attendance Report"):
+        user_db = pd.read_csv('user_database.csv')
+        login_history = pd.read_csv('login_history.csv')
+        
+        # Get unique users who have logged in at least once
+        attended_users = login_history[['country', 'name']].drop_duplicates()
+        
+        # Calculate attendance percentage
+        total_users = len(user_db)
+        attended_users_count = len(attended_users)
+        attendance_percentage = (attended_users_count / total_users) * 100
+        
+        st.write(f"Total users: {total_users}")
+        st.write(f"Users who attended: {attended_users_count}")
+        st.write(f"Attendance percentage: {attendance_percentage:.2f}%")
+        
+        # Show detailed attendance list
+        st.write("Detailed Attendance List:")
+        attendance_list = user_db.merge(attended_users, on=['country', 'name'], how='left', indicator=True)
+        attendance_list['Attended'] = attendance_list['_merge'].map({'both': 'Yes', 'left_only': 'No'})
+        attendance_list = attendance_list.drop('_merge', axis=1)
+        st.dataframe(attendance_list)
 
 def zoom_access():
     st.title("Zoom Link Access")
@@ -76,7 +109,7 @@ def zoom_access():
         # Display login history
         login_history = pd.read_csv('login_history.csv')
         user_history = login_history[(login_history['country'] == user_data['country']) & (login_history['name'] == user_data['name'])]
-
+        
         if not user_history.empty:
             first_login = user_history[user_history['login_type'] == 'First login']['login_time'].iloc[0]
             last_login = user_history['login_time'].max()
@@ -89,6 +122,7 @@ def zoom_access():
 def main():
     if not st.session_state.logged_in:
         login()
+    elif st.session_state.is_admin:
     else:
         zoom_access()
 
