@@ -84,7 +84,13 @@ def get_attendance_report():
                  CASE WHEN lr.phrase_written = 1 THEN 'Yes' ELSE 'No' END as phrase_written,
                  CASE WHEN lr.zoom_link_clicked = 1 THEN 'Yes' ELSE 'No' END as zoom_link_clicked
                  FROM users u
-                 LEFT JOIN login_records lr ON u.id = lr.user_id''')
+                 LEFT JOIN (SELECT user_id, MAX(login_time) as last_login,
+                            MAX(nickname_copied) as nickname_copied,
+                            MAX(phrase_written) as phrase_written,
+                            MAX(zoom_link_clicked) as zoom_link_clicked
+                            FROM login_records
+                            GROUP BY user_id) lr
+                 ON u.id = lr.user_id''')
     report = c.fetchall()
     conn.close()
     return report
