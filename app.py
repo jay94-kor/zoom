@@ -67,28 +67,24 @@ def login_page():
         if st.button("Login"):
             # 시크릿에서 어드민 정보를 가져오려고 시도합니다.
             try:
-                admin_country = st.secrets["admin"]["country"]
-                admin_name = st.secrets["admin"]["name"]
+                admin_country = st.secrets["admin"]["country"].lower()
+                admin_name = st.secrets["admin"]["name"].lower()
+                if country == admin_country and name == admin_name:
+                    st.session_state.logged_in = True
+                    st.session_state.is_admin = True
+                    set_page('admin')
+                    st.success("관리자로 로그인했습니다!")
+                else:
+                    raise KeyError  # 일반 사용자 로그인 처리로 넘어갑니다.
             except KeyError:
-                # 시크릿이 설정되지 않은 경우 기본값을 사용합니다.
-                admin_country = "korea"
-                admin_name = "dnmd"
-                st.warning("Admin credentials not found in secrets. Using default values.")
-
-            if country == admin_country and name == admin_name:
-                st.session_state.logged_in = True
-                st.session_state.is_admin = True
-                set_page('admin')
-                st.success("Logged in as admin!")
-            else:
                 user = get_user(country, name)
                 if user:
                     st.session_state.logged_in = True
                     st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
                     set_page('zoom')
-                    st.success("Logged in successfully!")
+                    st.success("로그인에 성공했습니다!")
                 else:
-                    st.error("Invalid country or name")
+                    st.error("잘못된 국가 또는 이름입니다.")
 
 def admin_page():
     with st.container():
