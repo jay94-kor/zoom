@@ -65,7 +65,9 @@ def login_page():
         country = st.selectbox("Country", options=countries).lower()
         name = st.text_input("Name").lower()
         if st.button("Login"):
-            if country == "korea" and name == "dnmd":
+            admin_country = st.secrets["admin"]["country"]
+            admin_name = st.secrets["admin"]["name"]
+            if country == admin_country and name == admin_name:
                 st.session_state.logged_in = True
                 st.session_state.is_admin = True
                 set_page('admin')
