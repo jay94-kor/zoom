@@ -3,6 +3,7 @@ import pandas as pd
 import pyperclip
 from datetime import datetime
 from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries, update_nickname_copied, update_phrase_written, update_zoom_link_clicked
+import streamlit.components.v1 as components
 
 # Initialize database
 init_db()
@@ -128,21 +129,28 @@ def zoom_access():
 
         # Add a button to copy the nickname to clipboard
         if st.button("Copy Nickname"):
-            st.success("Nickname copied to clipboard!")
             update_nickname_copied(user_data['id'])
-            # JavaScript to copy the text to clipboard
-            st.markdown(f"""
+            components.html(
+                f"""
                 <script>
-                function copyToClipboard(text) {{
-                    navigator.clipboard.writeText(text).then(function() {{
-                        console.log('Async: Copying to clipboard was successful!');
-                    }}, function(err) {{
-                        console.error('Async: Could not copy text: ', err);
-                    }});
+                function copyToClipboard() {{
+                    const text = "{nickname}";
+                    navigator.clipboard.writeText(text).then(
+                        function() {{
+                            console.log('Copying to clipboard was successful!');
+                            alert('Nickname copied to clipboard!');
+                        }},
+                        function(err) {{
+                            console.error('Could not copy text: ', err);
+                            alert('Failed to copy nickname. Please try again.');
+                        }}
+                    );
                 }}
-                copyToClipboard("{nickname}");
+                copyToClipboard();
                 </script>
-                """, unsafe_allow_html=True)
+                """,
+                height=0,
+            )
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
