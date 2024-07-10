@@ -24,9 +24,9 @@ def init_db():
                  (id INTEGER PRIMARY KEY,
                   user_id INTEGER NOT NULL,
                   login_time TEXT NOT NULL,
-                  nickname_copied INTEGER DEFAULT 0,
-                  phrase_written INTEGER DEFAULT 0,
-                  zoom_link_clicked INTEGER DEFAULT 0,
+                  nickname_copied TEXT,
+                  phrase_written TEXT,
+                  zoom_link_clicked TEXT,
                   FOREIGN KEY (user_id) REFERENCES users(id))''')
     
     # Insert initial user data if the users table is empty
@@ -58,14 +58,38 @@ def add_login_record(user_id):
     c.execute("INSERT INTO login_records (user_id, login_time) VALUES (?, ?)",
               (user_id, login_time))
     conn.commit()
-    
-    # 디버그 코드 추가
-    print(f"Login record added for user_id: {user_id} at {login_time}")
-    
-    c.execute("SELECT * FROM login_records WHERE user_id=?", (user_id,))
-    print(f"Login records for user_id {user_id}: {c.fetchall()}")
-    
     conn.close()
+    return login_time
+
+def update_nickname_copied(user_id):
+    conn = sqlite3.connect('zoom_app.db')
+    c = conn.cursor()
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("UPDATE login_records SET nickname_copied = ? WHERE user_id = ? AND nickname_copied IS NULL",
+              (time, user_id))
+    conn.commit()
+    conn.close()
+    return time
+
+def update_phrase_written(user_id):
+    conn = sqlite3.connect('zoom_app.db')
+    c = conn.cursor()
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("UPDATE login_records SET phrase_written = ? WHERE user_id = ? AND phrase_written IS NULL",
+              (time, user_id))
+    conn.commit()
+    conn.close()
+    return time
+
+def update_zoom_link_clicked(user_id):
+    conn = sqlite3.connect('zoom_app.db')
+    c = conn.cursor()
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("UPDATE login_records SET zoom_link_clicked = ? WHERE user_id = ? AND zoom_link_clicked IS NULL",
+              (time, user_id))
+    conn.commit()
+    conn.close()
+    return time
 
 def get_login_history(user_id):
     conn = sqlite3.connect('zoom_app.db')
@@ -79,18 +103,13 @@ def get_attendance_report():
     conn = sqlite3.connect('zoom_app.db')
     c = conn.cursor()
     c.execute('''SELECT u.country, u.name, 
-                 CASE WHEN lr.user_id IS NOT NULL THEN 'Yes' ELSE 'No' END as logged_in,
-                 CASE WHEN lr.nickname_copied = 1 THEN 'Yes' ELSE 'No' END as nickname_copied,
-                 CASE WHEN lr.phrase_written = 1 THEN 'Yes' ELSE 'No' END as phrase_written,
-                 CASE WHEN lr.zoom_link_clicked = 1 THEN 'Yes' ELSE 'No' END as zoom_link_clicked
+                 lr.login_time,
+                 lr.nickname_copied,
+                 lr.phrase_written,
+                 lr.zoom_link_clicked
                  FROM users u
-                 LEFT JOIN (SELECT user_id, MAX(login_time) as last_login,
-                            MAX(nickname_copied) as nickname_copied,
-                            MAX(phrase_written) as phrase_written,
-                            MAX(zoom_link_clicked) as zoom_link_clicked
-                            FROM login_records
-                            GROUP BY user_id) lr
-                 ON u.id = lr.user_id''')
+                 LEFT JOIN login_records lr ON u.id = lr.user_id
+                 ORDER BY lr.login_time DESC''')
     report = c.fetchall()
     conn.close()
     return report

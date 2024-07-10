@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries
+from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries, update_nickname_copied, update_phrase_written, update_zoom_link_clicked
 
 # Initialize database
 init_db()
@@ -77,6 +77,7 @@ def login_page():
                     st.success("Logged in successfully!")
                 else:
                     st.error("Invalid country or name")
+
 def admin_page():
     with st.container():
         st.title("Admin Page")
@@ -84,7 +85,7 @@ def admin_page():
             report = get_attendance_report()
             
             total_users = len(report)
-            attended_users = sum(1 for r in report if r[2] == 'Yes')
+            attended_users = sum(1 for r in report if r[2] is not None)
             attendance_percentage = (attended_users / total_users) * 100 if total_users > 0 else 0
             
             st.write(f"Total users: {total_users}")
@@ -94,14 +95,14 @@ def admin_page():
             st.write("Detailed Attendance List:")
             
             # 데이터프레임 생성
-            df = pd.DataFrame(report, columns=['Country', 'Name', 'Logged In', 'Nickname Copied', 'Phrase Written', 'Zoom Link Clicked'])
+            df = pd.DataFrame(report, columns=['Country', 'Name', 'Login Time', 'Nickname Copied', 'Phrase Written', 'Zoom Link Clicked'])
             
-            # 'Logged In'이 'No'인 행을 맨 위로 정렬
-            df = df.sort_values('Logged In', ascending=True)
+            # 'Login Time'이 None인 행을 맨 위로 정렬
+            df = df.sort_values('Login Time', ascending=True, na_position='first')
             
             # 스타일 적용
             def highlight_no_login(row):
-                if row['Logged In'] == 'No':
+                if pd.isnull(row['Login Time']):
                     return ['background-color: yellow'] * len(row)
                 return [''] * len(row)
             
@@ -121,8 +122,10 @@ def zoom_access():
         nickname = f"{user_data['country']} / {user_data['name']}"
         st.write(f"Your Zoom nickname: {nickname}")
 
-        st.text_area("Your Zoom nickname (click to copy)", nickname, height=50)
-        st.info("Click the text area above to select the nickname, then use Ctrl+C (or Cmd+C on Mac) to copy.")
+        if st.button("Copy Nickname"):
+            pyperclip.copy(nickname)
+            st.success("Nickname copied to clipboard!")
+            update_nickname_copied(user_data['id'])
 
         st.markdown("Type the following phrase to confirm:")
         st.markdown("**I will use my nickname to join Zoom**")
@@ -130,14 +133,17 @@ def zoom_access():
         confirmation = st.text_input("Confirmation:")
         if confirmation.lower() == "i will use my nickname to join zoom":
             st.session_state.show_zoom_info = True
+            update_phrase_written(user_data['id'])
             
             # Record login at this point
-            add_login_record(user_data['id'])
+            login_time = add_login_record(user_data['id'])
 
         if st.session_state.show_zoom_info:
             st.success("Authorized! Here is your Zoom information:")
-            st.write(f"Zoom Link: {ZOOM_LINK}")
-            st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+            if st.button("Click to show Zoom Link"):
+                st.write(f"Zoom Link: {ZOOM_LINK}")
+                st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+                update_zoom_link_clicked(user_data['id'])
 
             login_history = get_login_history(user_data['id'])
             
