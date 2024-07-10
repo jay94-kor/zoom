@@ -26,10 +26,7 @@ admin_country = "korea"
 admin_name = "dnmd"
 
 # Check if admin credentials are set
-if admin_country and admin_name:
-    st.success("Admin credentials loaded successfully.")
-else:
-    st.error("Admin credentials not set. Please set them in the code.")
+
 
 def reset_session():
     for key in st.session_state.keys():
