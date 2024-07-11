@@ -147,6 +147,22 @@ def get_user(country, email):
     conn.close()
     return user
 
+def get_country_code(nationality):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT `country codes` FROM country_db WHERE nationality = ?", (nationality,))
+    result = c.fetchone()
+    conn.close()
+    return result[0] if result else None
+
+def get_user_full_name(email):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT `First name`, `Last name` FROM staff_db WHERE `E-mail` = ? UNION SELECT `First name`, `Last name` FROM user_db WHERE `E-mail` = ?", (email, email))
+    result = c.fetchone()
+    conn.close()
+    return f"{result[0]} {result[1]}" if result else None
+
 if __name__ == "__main__":
     init_db()
     print("Database initialized successfully.")
