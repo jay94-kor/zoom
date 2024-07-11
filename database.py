@@ -5,21 +5,21 @@ def get_db_connection():
     return sqlite3.connect('login.db')
 
 def init_db():
-    conn = sqlite3.connect('zoom_app.db')
+    conn = get_db_connection()
     c = conn.cursor()
     
     # Create users table
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY,
                   country TEXT NOT NULL,
-                  name TEXT NOT NULL)''')
+                  name TEXT NOT NULL,
+                  email TEXT NOT NULL)''')
     
     # Create login_history table
     c.execute('''CREATE TABLE IF NOT EXISTS login_history
                  (id INTEGER PRIMARY KEY,
                   user_id INTEGER NOT NULL,
                   login_time TEXT NOT NULL,
-                  login_type TEXT NOT NULL,
                   FOREIGN KEY (user_id) REFERENCES users(id))''')
     
     # Create login_records table
@@ -32,16 +32,22 @@ def init_db():
                   zoom_link_clicked TEXT,
                   FOREIGN KEY (user_id) REFERENCES users(id))''')
     
-    # Insert initial user data if the users table is empty
-    c.execute("SELECT COUNT(*) FROM users")
+    # Create country_db table
+    c.execute('''CREATE TABLE IF NOT EXISTS country_db
+                 (id INTEGER PRIMARY KEY,
+                  nationality TEXT NOT NULL,
+                  country_codes TEXT NOT NULL)''')
+    
+    # Insert initial country data if the country_db table is empty
+    c.execute("SELECT COUNT(*) FROM country_db")
     if c.fetchone()[0] == 0:
-        initial_users = [
-            ('Korea', 'Dongjae'),
-            ('USA', 'John'),
-            ('Japan', 'Yuki'),
-            ('China', 'Li Wei')
+        initial_countries = [
+            ('Korea', 'KR'),
+            ('USA', 'US'),
+            ('Japan', 'JP'),
+            ('China', 'CN')
         ]
-        c.executemany("INSERT INTO users (country, name) VALUES (?, ?)", initial_users)
+        c.executemany("INSERT INTO country_db (nationality, country_codes) VALUES (?, ?)", initial_countries)
     
     conn.commit()
     conn.close()
@@ -150,7 +156,7 @@ def get_user(country, email):
 def get_country_code(nationality):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT `country codes` FROM country_db WHERE nationality = ?", (nationality,))
+    c.execute("SELECT country_codes FROM country_db WHERE nationality = ?", (nationality,))
     result = c.fetchone()
     conn.close()
     return result[0] if result else None
