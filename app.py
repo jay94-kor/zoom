@@ -110,7 +110,15 @@ def do_login(country, email):
     user = get_user(country, email)
     if user:
         st.session_state.logged_in = True
-        st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2], 'email': user[3], 'user_type': user[4]}
+        st.session_state.user_data = {
+            'id': user[0], 
+            'email': user[1],
+            'first_name': user[2],
+            'last_name': user[3],
+            'country': user[4],
+            'country_codes': user[5],
+            'user_type': user[6]
+        }
         set_page('zoom')
         st.success("Logged in successfully!")
     else:
@@ -161,12 +169,8 @@ def zoom_access():
         # 디버깅을 위한 출력
         st.write(f"Debug - User Data: {user_data}")
         
-        country_code = get_country_code(user_data['email'])
-        if country_code is None:
-            st.error(f"Unable to find country code for {user_data['email']}. Please contact support.")
-            return
-        
-        full_name = f"{user_data['name']}"  # user_data에 이미 전체 이름이 있다고 가정
+        country_code = user_data['country_codes']
+        full_name = f"{user_data['first_name']} {user_data['last_name']}"
         
         nickname = f"{country_code} / {full_name}"
         
