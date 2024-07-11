@@ -4,7 +4,7 @@ import streamlit_authenticator as stauth
 import pandas as pd
 import pyperclip
 from datetime import datetime
-from database import init_db, get_user, add_login_record, get_login_history, get_attendance_report, get_countries, update_nickname_copied, update_phrase_written, update_zoom_link_clicked, get_country_code, get_user_full_name
+from database import init_db, get_user, get_countries
 import streamlit.components.v1 as components
 
 # Initialize database
@@ -171,7 +171,7 @@ def admin_page():
 
 def zoom_access():
     if not st.session_state.logged_in or st.session_state.user_data is None:
-        st.error("Please log in first.")
+        st.error("먼저 로그인해 주세요.")
         set_page('login')
         return
 
@@ -191,50 +191,15 @@ def zoom_access():
 
         st.write("---")
 
-        country_code = user_data['country_codes']
-        full_name = f"{user_data['first_name']} {user_data['last_name']}"
-        
-        nickname = f"{country_code} / {full_name}"
-        
-        st.write("Your Zoom nickname:")
-        st.code(nickname, language="")
-        st.info("Please copy your nickname above and use it when joining the Zoom meeting.")
-
-        st.markdown("Type the following phrase to confirm:")
-        st.markdown("**I will use my nickname to join Zoom**")
-        
-        confirmation = st.text_input("Confirmation:")
-        if confirmation.lower() == "i will use my nickname to join zoom":
-            st.session_state.show_zoom_info = True
-            update_phrase_written(user_data['id'])
-            update_nickname_copied(nickname)
-            
-            # Record login at this point
-            login_time = add_login_record(nickname)
-
-        if st.session_state.show_zoom_info:
-            st.success("Authorized! Here is your Zoom information:")
-            if st.button("Click to show Zoom Link"):
-                st.markdown(f"""
-                <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-                    <h3 style="color: #007bff;">Zoom Link:</h3>
-                    <p><a href="{ZOOM_LINK}" target="_blank">{ZOOM_LINK}</a></p>
-                    <h3 style="color: #007bff;">Zoom Password:</h3>
-                    <p><strong>{ZOOM_PASSWORD}</strong></p>
-                </div>
-                """, unsafe_allow_html=True)
-                update_zoom_link_clicked(nickname)
-
-            login_history = get_login_history(nickname)
-            
-            if login_history:
-                first_login = login_history[0][0]
-                last_login = login_history[-1][0]
-                st.write(f"First login: {first_login}")
-                st.write(f"Most recent login: {last_login}")
-                st.write(f"Total logins: {len(login_history)}")
-            else:
-                st.write("This is your first login.")
+        st.success("여기 Zoom 정보가 있습니다:")
+        st.markdown(f"""
+        <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
+            <h3 style="color: #007bff;">Zoom Link:</h3>
+            <p><a href="{ZOOM_LINK}" target="_blank">{ZOOM_LINK}</a></p>
+            <h3 style="color: #007bff;">Zoom Password:</h3>
+            <p><strong>{ZOOM_PASSWORD}</strong></p>
+        </div>
+        """, unsafe_allow_html=True)
 
 def main():
     main_layout()

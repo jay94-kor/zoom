@@ -1,5 +1,4 @@
 import sqlite3
-from datetime import datetime
 import csv
 
 def get_db_connection():
@@ -19,17 +18,8 @@ def init_db():
                   country_codes TEXT NOT NULL,
                   user_type TEXT NOT NULL CHECK(user_type IN ('participant', 'staff')))''')
     
-    # Create login_records table (combining login_history and login_records)
-    c.execute('''CREATE TABLE IF NOT EXISTS login_records
-                 (id INTEGER PRIMARY KEY,
-                  nickname TEXT NOT NULL,
-                  login_time TEXT NOT NULL,
-                  nickname_copied TEXT,
-                  phrase_written TEXT,
-                  zoom_link_clicked TEXT)''')
-    
-    # Drop country_db table
-    c.execute('DROP TABLE IF EXISTS country_db')
+    # Drop login_records table
+    c.execute('DROP TABLE IF EXISTS login_records')
     
     conn.commit()
     conn.close()
@@ -62,43 +52,6 @@ def get_user_full_name(email):
     conn.close()
     return f"{result[0]} {result[1]}" if result else None
 
-def add_login_record(nickname):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute("INSERT INTO login_records (nickname, login_time) VALUES (?, ?)", (nickname, current_time))
-    conn.commit()
-    conn.close()
-    return current_time
-
-def get_login_history(nickname):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT login_time FROM login_records WHERE nickname = ? ORDER BY login_time ASC", (nickname,))
-    login_history = cursor.fetchall()
-    conn.close()
-    return login_history
-
-def get_attendance_report():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT users.country, users.first_name, users.last_name, users.user_type,
-               MIN(login_records.login_time) as first_login,
-               MAX(login_records.login_time) as last_login,
-               COUNT(login_records.id) as login_count
-        FROM users
-        LEFT JOIN login_records ON login_records.nickname = (
-            users.country_codes || ' / ' || 
-            users.first_name || ' ' || users.last_name
-        )
-        GROUP BY users.id
-        ORDER BY users.country, users.first_name, users.last_name
-    """)
-    report = cursor.fetchall()
-    conn.close()
-    return report
-
 def get_countries():
     conn = get_db_connection()
     c = conn.cursor()
@@ -106,24 +59,6 @@ def get_countries():
     countries = [row[0] for row in c.fetchall()]
     conn.close()
     return countries
-
-def update_login_record(nickname, field):
-    conn = get_db_connection()
-    c = conn.cursor()
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute(f"UPDATE login_records SET {field} = ? WHERE nickname = ? AND {field} IS NULL", (time, nickname))
-    conn.commit()
-    conn.close()
-    return time
-
-def update_nickname_copied(nickname):
-    return update_login_record(nickname, 'nickname_copied')
-
-def update_phrase_written(nickname):
-    return update_login_record(nickname, 'phrase_written')
-
-def update_zoom_link_clicked(nickname):
-    return update_login_record(nickname, 'zoom_link_clicked')
 
 def import_csv_to_db(csv_file_path):
     conn = get_db_connection()
