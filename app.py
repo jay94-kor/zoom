@@ -10,8 +10,8 @@ import streamlit.components.v1 as components
 # Initialize database
 init_db()
 
-ZOOM_LINK = "https://zoom.us/j/example"
-ZOOM_PASSWORD = "123456"
+ZOOM_LINK = "https://us06web.zoom.us/j/85216023826?pwd=NtS5OUXcMAI9ZJbacJee18xYx90eaW.1"
+ZOOM_PASSWORD = "254368"
 
 # Initialize session state
 if 'logged_in' not in st.session_state:
