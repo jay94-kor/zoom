@@ -103,7 +103,7 @@ def get_attendance_report():
 def get_countries():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT DISTINCT nationality FROM country_db ORDER BY nationality")
+    c.execute("SELECT DISTINCT country FROM users ORDER BY country")
     countries = [row[0] for row in c.fetchall()]
     conn.close()
     return countries
