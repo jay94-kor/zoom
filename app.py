@@ -85,9 +85,9 @@ def login_page():
     
     with col2:
         card(
-            title="Login",
-            text="Please enter your credentials",
-            image="https://static.streamlit.io/examples/",
+            title="DNMD",
+            text="DNMD / ZOOM Link Solution",
+            image="https://static.streamlit.io/examples/dice.jpg",
             styles={
                 "card": {
                     "width": "100%",
