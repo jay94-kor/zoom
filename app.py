@@ -169,9 +169,6 @@ def zoom_access():
         set_page('login')
         return
 
-    # 언어 선택 드롭다운 추가
-    language = st.selectbox("Select Language", ["English", "한국어", "Español", "Français", "Deutsch"])
-
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
