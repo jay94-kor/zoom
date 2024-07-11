@@ -195,7 +195,7 @@ def zoom_access():
                 last_login = login_history[-1][0]
                 st.write(f"First login: {first_login}")
                 st.write(f"Most recent login: {last_login}")
-                st.write(f"Total logins: {len(login_history)}")
+                st.write(f"Total logins: {len(login_history)}")  # 항상 2가 될 것입니다.
             else:
                 st.write("This is your first login.")
 
