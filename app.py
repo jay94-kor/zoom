@@ -184,7 +184,7 @@ def zoom_access():
         nickname = f"{country_code} / {full_name}"
         
         st.write("Your Zoom nickname:")
-        st.text_area("Nickname", nickname, height=50)
+        st.code(nickname, language="")
         st.info("Please copy your nickname above and use it when joining the Zoom meeting.")
 
         st.markdown("Type the following phrase to confirm:")
