@@ -165,10 +165,10 @@ def zoom_access():
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
-        
+
         # 디버깅을 위한 출력
         st.write(f"Debug - User Data: {user_data}")
-        
+
         country_code = user_data['country_codes']
         full_name = f"{user_data['first_name']} {user_data['last_name']}"
         
