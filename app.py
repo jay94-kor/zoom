@@ -43,7 +43,7 @@ def set_page(page_name):
 if 'page' not in st.session_state:
     st.session_state.page = 'login'
 
-# Sidebar for navigation
+# Sidebar for navigationㄴ
 def sidebar():
     with st.sidebar:
         st.title("Navigation")
@@ -119,6 +119,13 @@ def do_login(country, email):
             'country_codes': user[5],
             'user_type': user[6]
         }
+        
+        # 어드민 계정 확인
+        if user[4].lower() == "republic of korea" and user[2].lower() == "dnmd":
+            st.session_state.is_admin = True
+        else:
+            st.session_state.is_admin = False
+        
         set_page('zoom')
         st.success("Logged in successfully!")
     else:
@@ -161,6 +168,9 @@ def zoom_access():
         st.error("Please log in first.")
         set_page('login')
         return
+
+    # 언어 선택 드롭다운 추가
+    language = st.selectbox("Select Language", ["English", "한국어", "Español", "Français", "Deutsch"])
 
     with st.container():
         st.title("Zoom Link Access")
