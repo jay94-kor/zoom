@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime
 
 def get_db_connection():
-    return sqlite3.connect('zoom_app.db')
+    return sqlite3.connect('login.db')
 
 def init_db():
     conn = sqlite3.connect('zoom_app.db')
@@ -132,12 +132,20 @@ def get_attendance_report():
     return report
 
 def get_countries():
-    conn = sqlite3.connect('zoom_app.db')
+    conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT DISTINCT country FROM users ORDER BY country")
+    c.execute("SELECT DISTINCT nationality FROM staff_db UNION SELECT DISTINCT nationality FROM user_db ORDER BY nationality")
     countries = [row[0] for row in c.fetchall()]
     conn.close()
     return countries
+
+def get_user(country, email):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("SELECT * FROM staff_db WHERE nationality=? AND `E-mail`=? UNION SELECT * FROM user_db WHERE nationality=? AND `E-mail`=?", (country, email, country, email))
+    user = c.fetchone()
+    conn.close()
+    return user
 
 if __name__ == "__main__":
     init_db()

@@ -99,28 +99,22 @@ def login_page():
         countries = get_countries()
         country = st.selectbox("Country", options=countries, format_func=lambda x: x.capitalize())
         
-        # 사용자 이름 입력
-        name = st.text_input("Name")
+        # 이메일 입력
+        email = st.text_input("E-mail")
 
         # 로그인 버튼
         if st.button("Login", key="login_button"):
-            do_login(country.lower(), name.lower())
+            do_login(country, email)
 
-def do_login(country, name):
-    if country == admin_country.lower() and name == admin_name.lower():
+def do_login(country, email):
+    user = get_user(country, email)
+    if user:
         st.session_state.logged_in = True
-        st.session_state.is_admin = True
-        set_page('admin')
-        st.success("Logged in as admin!")
+        st.session_state.user_data = {'id': user[0], 'country': user[1], 'email': user[2]}
+        set_page('zoom')
+        st.success("Logged in successfully!")
     else:
-        user = get_user(country, name)
-        if user:
-            st.session_state.logged_in = True
-            st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2]}
-            set_page('zoom')
-            st.success("Logged in successfully!")
-        else:
-            st.error("Invalid country or name")
+        st.error("Invalid country or email")
 
 def admin_page():
     with st.container():
@@ -163,7 +157,7 @@ def zoom_access():
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
-        nickname = f"{user_data['country']} / {user_data['name']}"
+        nickname = f"{user_data['country']} / {user_data['email']}"
         
         st.write("Your Zoom nickname:")
         st.code(nickname, language="")
@@ -176,7 +170,7 @@ def zoom_access():
         if confirmation.lower() == "i will use my nickname to join zoom":
             st.session_state.show_zoom_info = True
             update_phrase_written(user_data['id'])
-            update_nickname_copied(user_data['id'])  # 사용자가 닉네임을 복사했다고 가정
+            update_nickname_copied(user_data['id'])
             
             # Record login at this point
             login_time = add_login_record(user_data['id'])
@@ -195,7 +189,7 @@ def zoom_access():
                 last_login = login_history[-1][0]
                 st.write(f"First login: {first_login}")
                 st.write(f"Most recent login: {last_login}")
-                st.write(f"Total logins: {len(login_history)}")  # 항상 2가 될 것입니다.
+                st.write(f"Total logins: {len(login_history)}")
             else:
                 st.write("This is your first login.")
 
