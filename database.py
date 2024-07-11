@@ -13,16 +13,10 @@ def init_db():
                  (id INTEGER PRIMARY KEY,
                   country TEXT NOT NULL,
                   name TEXT NOT NULL,
-                  email TEXT NOT NULL)''')
+                  email TEXT NOT NULL,
+                  user_type TEXT NOT NULL CHECK(user_type IN ('staff', 'participant')))''')
     
-    # Create login_history table
-    c.execute('''CREATE TABLE IF NOT EXISTS login_history
-                 (id INTEGER PRIMARY KEY,
-                  user_id INTEGER NOT NULL,
-                  login_time TEXT NOT NULL,
-                  FOREIGN KEY (user_id) REFERENCES users(id))''')
-    
-    # Create login_records table
+    # Create login_records table (combining login_history and login_records)
     c.execute('''CREATE TABLE IF NOT EXISTS login_records
                  (id INTEGER PRIMARY KEY,
                   user_id INTEGER NOT NULL,
@@ -68,22 +62,8 @@ def get_user_full_name(email):
 def add_login_record(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    current_time = datetime.now()
-
-    # 기존 로그인 기록 확인
-    cursor.execute("SELECT login_time FROM login_history WHERE user_id = ? ORDER BY login_time ASC", (user_id,))
-    existing_records = cursor.fetchall()
-
-    if not existing_records:
-        # 첫 로그인인 경우
-        cursor.execute("INSERT INTO login_history (user_id, login_time) VALUES (?, ?)", (user_id, current_time))
-    else:
-        # 이미 로그인 기록이 있는 경우
-        first_login = existing_records[0][0]
-        cursor.execute("DELETE FROM login_history WHERE user_id = ?", (user_id,))
-        cursor.execute("INSERT INTO login_history (user_id, login_time) VALUES (?, ?), (?, ?)",
-                       (user_id, first_login, user_id, current_time))
-
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("INSERT INTO login_records (user_id, login_time) VALUES (?, ?)", (user_id, current_time))
     conn.commit()
     conn.close()
     return current_time
@@ -91,7 +71,7 @@ def add_login_record(user_id):
 def get_login_history(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT login_time FROM login_history WHERE user_id = ? ORDER BY login_time ASC", (user_id,))
+    cursor.execute("SELECT login_time FROM login_records WHERE user_id = ? ORDER BY login_time ASC", (user_id,))
     login_history = cursor.fetchall()
     conn.close()
     return login_history
@@ -100,11 +80,12 @@ def get_attendance_report():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT users.country, users.name, 
-               MIN(login_history.login_time) as first_login,
-               MAX(login_history.login_time) as last_login
+        SELECT users.country, users.name, users.user_type,
+               MIN(login_records.login_time) as first_login,
+               MAX(login_records.login_time) as last_login,
+               COUNT(login_records.id) as login_count
         FROM users
-        LEFT JOIN login_history ON users.id = login_history.user_id
+        LEFT JOIN login_records ON users.id = login_records.user_id
         GROUP BY users.id
         ORDER BY users.country, users.name
     """)
@@ -119,6 +100,24 @@ def get_countries():
     countries = [row[0] for row in c.fetchall()]
     conn.close()
     return countries
+
+def update_login_record(user_id, field):
+    conn = get_db_connection()
+    c = conn.cursor()
+    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute(f"UPDATE login_records SET {field} = ? WHERE user_id = ? AND {field} IS NULL", (time, user_id))
+    conn.commit()
+    conn.close()
+    return time
+
+def update_nickname_copied(user_id):
+    return update_login_record(user_id, 'nickname_copied')
+
+def update_phrase_written(user_id):
+    return update_login_record(user_id, 'phrase_written')
+
+def update_zoom_link_clicked(user_id):
+    return update_login_record(user_id, 'zoom_link_clicked')
 
 if __name__ == "__main__":
     init_db()

@@ -110,7 +110,7 @@ def do_login(country, email):
     user = get_user(country, email)
     if user:
         st.session_state.logged_in = True
-        st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2], 'email': user[3]}
+        st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2], 'email': user[3], 'user_type': user[4]}
         set_page('zoom')
         st.success("Logged in successfully!")
     else:
@@ -123,7 +123,7 @@ def admin_page():
             report = get_attendance_report()
             
             total_users = len(report)
-            attended_users = sum(1 for r in report if r[2] is not None)
+            attended_users = sum(1 for r in report if r[3] is not None)
             attendance_percentage = (attended_users / total_users) * 100 if total_users > 0 else 0
             
             st.write(f"Total users: {total_users}")
@@ -133,7 +133,7 @@ def admin_page():
             st.write("Detailed Attendance List:")
             
             # 데이터프레임 생성
-            df = pd.DataFrame(report, columns=['Country', 'Name', 'First Login', 'Last Login'])
+            df = pd.DataFrame(report, columns=['Country', 'Name', 'User Type', 'First Login', 'Last Login', 'Login Count'])
             
             # 'First Login'이 None인 행을 맨 위로 정렬
             df = df.sort_values('First Login', ascending=True, na_position='first')
