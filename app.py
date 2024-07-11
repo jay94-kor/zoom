@@ -110,7 +110,7 @@ def do_login(country, email):
     user = get_user(country, email)
     if user:
         st.session_state.logged_in = True
-        st.session_state.user_data = {'id': user[0], 'country': user[1], 'email': user[2]}
+        st.session_state.user_data = {'id': user[0], 'country': user[1], 'name': user[2], 'email': user[3]}
         set_page('zoom')
         st.success("Logged in successfully!")
     else:
@@ -160,44 +160,49 @@ def zoom_access():
         country_code = get_country_code(user_data['country'])
         full_name = get_user_full_name(user_data['email'])
         
-        if country_code and full_name:
-            nickname = f"{country_code} / {full_name}"
+        if country_code is None:
+            st.error(f"Unable to find country code for {user_data['country']}. Please contact support.")
+            return
+        
+        if full_name is None:
+            st.error(f"Unable to find user name for {user_data['email']}. Please contact support.")
+            return
+
+        nickname = f"{country_code} / {full_name}"
+        
+        st.write("Your Zoom nickname:")
+        st.code(nickname, language="")
+        st.info("Please copy your nickname above and use it when joining the Zoom meeting.")
+
+        st.markdown("Type the following phrase to confirm:")
+        st.markdown("**I will use my nickname to join Zoom**")
+        
+        confirmation = st.text_input("Confirmation:")
+        if confirmation.lower() == "i will use my nickname to join zoom":
+            st.session_state.show_zoom_info = True
+            update_phrase_written(user_data['id'])
+            update_nickname_copied(user_data['id'])
             
-            st.write("Your Zoom nickname:")
-            st.code(nickname, language="")
-            st.info("Please copy your nickname above and use it when joining the Zoom meeting.")
+            # Record login at this point
+            login_time = add_login_record(user_data['id'])
 
-            st.markdown("Type the following phrase to confirm:")
-            st.markdown("**I will use my nickname to join Zoom**")
+        if st.session_state.show_zoom_info:
+            st.success("Authorized! Here is your Zoom information:")
+            if st.button("Click to show Zoom Link"):
+                st.write(f"Zoom Link: {ZOOM_LINK}")
+                st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+                update_zoom_link_clicked(user_data['id'])
+
+            login_history = get_login_history(user_data['id'])
             
-            confirmation = st.text_input("Confirmation:")
-            if confirmation.lower() == "i will use my nickname to join zoom":
-                st.session_state.show_zoom_info = True
-                update_phrase_written(user_data['id'])
-                update_nickname_copied(user_data['id'])
-                
-                # Record login at this point
-                login_time = add_login_record(user_data['id'])
-
-            if st.session_state.show_zoom_info:
-                st.success("Authorized! Here is your Zoom information:")
-                if st.button("Click to show Zoom Link"):
-                    st.write(f"Zoom Link: {ZOOM_LINK}")
-                    st.write(f"Zoom Password: {ZOOM_PASSWORD}")
-                    update_zoom_link_clicked(user_data['id'])
-
-                login_history = get_login_history(user_data['id'])
-                
-                if login_history:
-                    first_login = login_history[0][0]
-                    last_login = login_history[-1][0]
-                    st.write(f"First login: {first_login}")
-                    st.write(f"Most recent login: {last_login}")
-                    st.write(f"Total logins: {len(login_history)}")
-                else:
-                    st.write("This is your first login.")
-        else:
-            st.error("Unable to generate nickname. Please contact support.")
+            if login_history:
+                first_login = login_history[0][0]
+                last_login = login_history[-1][0]
+                st.write(f"First login: {first_login}")
+                st.write(f"Most recent login: {last_login}")
+                st.write(f"Total logins: {len(login_history)}")
+            else:
+                st.write("This is your first login.")
 
 def main():
     main_layout()
