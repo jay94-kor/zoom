@@ -49,9 +49,11 @@ def sidebar():
         st.title("Navigation")
         if st.session_state.get('logged_in', False):
             if st.session_state.get('is_admin', False):
-                st.button("Admin Page", on_click=set_page, args=('admin',))
+                if st.button("Admin Page"):
+                    set_page('admin')
             else:
-                st.button("Zoom Access", on_click=set_page, args=('zoom',))
+                if st.button("Zoom Access"):
+                    set_page('zoom')
             if st.button("Logout"):
                 reset_session()
         elif st.session_state.page != 'login':
@@ -123,10 +125,11 @@ def do_login(country, email):
         # 어드민 계정 확인
         if user[4].lower() == "republic of korea" and user[1].lower() == "dnmd":
             st.session_state.is_admin = True
+            set_page('admin')
         else:
             st.session_state.is_admin = False
+            set_page('zoom')
         
-        set_page('zoom')
         st.success("Logged in successfully!")
     else:
         st.error("Invalid country or email")
