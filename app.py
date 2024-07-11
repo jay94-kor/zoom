@@ -157,17 +157,17 @@ def zoom_access():
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
-        country_code = get_country_code(user_data['email'])
-        full_name = get_user_full_name(user_data['email'])
         
+        # 디버깅을 위한 출력
+        st.write(f"Debug - User Data: {user_data}")
+        
+        country_code = get_country_code(user_data['email'])
         if country_code is None:
             st.error(f"Unable to find country code for {user_data['email']}. Please contact support.")
             return
         
-        if full_name is None:
-            st.error(f"Unable to find user name for {user_data['email']}. Please contact support.")
-            return
-
+        full_name = f"{user_data['name']}"  # user_data에 이미 전체 이름이 있다고 가정
+        
         nickname = f"{country_code} / {full_name}"
         
         st.write("Your Zoom nickname:")

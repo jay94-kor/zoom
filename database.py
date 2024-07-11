@@ -42,13 +42,17 @@ def get_user(country, email):
     conn.close()
     return user
 
-def get_country_code(country):
+def get_country_code(email):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("SELECT country_codes FROM users WHERE LOWER(country) = LOWER(?)", (country,))
+    c.execute("SELECT country_codes FROM users WHERE LOWER(email) = LOWER(?)", (email,))
     result = c.fetchone()
     conn.close()
-    return result[0] if result else None
+    if result:
+        return result[0]
+    else:
+        print(f"Country code not found for email: {email}")  # 디버깅을 위한 출력
+        return None
 
 def get_user_full_name(email):
     conn = get_db_connection()
