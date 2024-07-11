@@ -188,16 +188,16 @@ def zoom_access():
             update_nickname_copied(nickname)
             
             # Record login at this point
-            login_time = add_login_record(user_data['id'])
+            login_time = add_login_record(nickname)
 
         if st.session_state.show_zoom_info:
             st.success("Authorized! Here is your Zoom information:")
             if st.button("Click to show Zoom Link"):
                 st.write(f"Zoom Link: {ZOOM_LINK}")
                 st.write(f"Zoom Password: {ZOOM_PASSWORD}")
-                update_zoom_link_clicked(user_data['id'])
+                update_zoom_link_clicked(nickname)
 
-            login_history = get_login_history(user_data['id'])
+            login_history = get_login_history(nickname)
             
             if login_history:
                 first_login = login_history[0][0]
