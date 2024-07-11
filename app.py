@@ -43,7 +43,7 @@ def set_page(page_name):
 if 'page' not in st.session_state:
     st.session_state.page = 'login'
 
-# Sidebar for navigationㄴ
+# Sidebar for navigation
 def sidebar():
     with st.sidebar:
         st.title("Navigation")
@@ -121,7 +121,7 @@ def do_login(country, email):
         }
         
         # 어드민 계정 확인
-        if user[4].lower() == "republic of korea" and user[2].lower() == "dnmd":
+        if user[4].lower() == "republic of korea" and user[1].lower() == "dnmd":
             st.session_state.is_admin = True
         else:
             st.session_state.is_admin = False
@@ -148,7 +148,7 @@ def admin_page():
             st.write("Detailed Attendance List:")
             
             # 데이터프레임 생성
-            df = pd.DataFrame(report, columns=['Country', 'Name', 'User Type', 'First Login', 'Last Login', 'Login Count'])
+            df = pd.DataFrame(report, columns=['Country', 'First Name', 'Last Name', 'User Type', 'First Login', 'Last Login', 'Login Count'])
             
             # 'First Login'이 None인 행을 맨 위로 정렬
             df = df.sort_values('First Login', ascending=True, na_position='first')

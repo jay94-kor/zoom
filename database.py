@@ -86,16 +86,11 @@ def get_attendance_report():
         SELECT users.country, users.first_name, users.last_name, users.user_type,
                MIN(login_records.login_time) as first_login,
                MAX(login_records.login_time) as last_login,
-               COUNT(login_records.id) as login_count,
-               login_records.nickname
+               COUNT(login_records.id) as login_count
         FROM users
         LEFT JOIN login_records ON login_records.nickname = (
             users.country_codes || ' / ' || 
-            CASE 
-                WHEN instr(users.first_name, ' ') > 0 
-                THEN substr(users.first_name, 1, instr(users.first_name, ' ')-1)
-                ELSE users.first_name
-            END || ' ' || users.last_name
+            users.first_name || ' ' || users.last_name
         )
         GROUP BY users.id
         ORDER BY users.country, users.first_name, users.last_name
