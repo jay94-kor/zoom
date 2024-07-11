@@ -202,8 +202,14 @@ def zoom_access():
         if st.session_state.show_zoom_info:
             st.success("Authorized! Here is your Zoom information:")
             if st.button("Click to show Zoom Link"):
-                st.write(f"Zoom Link: {ZOOM_LINK}")
-                st.write(f"Zoom Password: {ZOOM_PASSWORD}")
+                st.markdown(f"""
+                <div style="background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
+                    <h3 style="color: #007bff;">Zoom Link:</h3>
+                    <p><a href="{ZOOM_LINK}" target="_blank">{ZOOM_LINK}</a></p>
+                    <h3 style="color: #007bff;">Zoom Password:</h3>
+                    <p><strong>{ZOOM_PASSWORD}</strong></p>
+                </div>
+                """, unsafe_allow_html=True)
                 update_zoom_link_clicked(nickname)
 
             login_history = get_login_history(nickname)
