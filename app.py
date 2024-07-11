@@ -157,11 +157,11 @@ def zoom_access():
     with st.container():
         st.title("Zoom Link Access")
         user_data = st.session_state.user_data
-        country_code = get_country_code(user_data['country'])
+        country_code = get_country_code(user_data['email'])
         full_name = get_user_full_name(user_data['email'])
         
         if country_code is None:
-            st.error(f"Unable to find country code for {user_data['country']}. Please contact support.")
+            st.error(f"Unable to find country code for {user_data['email']}. Please contact support.")
             return
         
         if full_name is None:
@@ -181,7 +181,7 @@ def zoom_access():
         if confirmation.lower() == "i will use my nickname to join zoom":
             st.session_state.show_zoom_info = True
             update_phrase_written(user_data['id'])
-            update_nickname_copied(user_data['id'])
+            update_nickname_copied(nickname)
             
             # Record login at this point
             login_time = add_login_record(user_data['id'])
