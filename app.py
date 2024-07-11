@@ -109,6 +109,7 @@ def login_page():
             do_login(country, email)
 
 def do_login(country, email):
+    print(f"Debug - do_login: country={country}, email={email}")  # 디버그 출력 추가
     user = get_user(country, email)
     if user:
         st.session_state.logged_in = True
