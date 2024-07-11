@@ -1,6 +1,9 @@
 import sqlite3
 from datetime import datetime
 
+def get_db_connection():
+    return sqlite3.connect('zoom_app.db')
+
 def init_db():
     conn = sqlite3.connect('zoom_app.db')
     c = conn.cursor()
