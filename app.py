@@ -24,7 +24,7 @@ if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
 
 # Initialize admin credentials
-admin_country = "korea"
+admin_country = "republic of korea"
 admin_name = "dnmd"
 
 # Check if admin credentials are set
