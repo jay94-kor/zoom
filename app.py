@@ -87,7 +87,7 @@ def login_page():
         card(
             title="Login",
             text="Please enter your credentials",
-            image="https://static.streamlit.io/examples/dice.jpg",
+            image="https://static.streamlit.io/examples/",
             styles={
                 "card": {
                     "width": "100%",
@@ -133,7 +133,9 @@ def do_login(country, email):
         
         st.success("Logged in successfully!")
     else:
-        st.error("Invalid country or email")
+        st.error(f"Invalid country or email: {country}, {email}")  # 에러 메시지에 입력값 추가
+    
+    print(f"Debug - do_login result: logged_in={st.session_state.get('logged_in')}, is_admin={st.session_state.get('is_admin')}")  # 디버그 출력 추가
 
 def admin_page():
     with st.container():
