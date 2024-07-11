@@ -52,14 +52,27 @@ def get_user(country, name):
     return user
 
 def add_login_record(user_id):
-    conn = sqlite3.connect('zoom_app.db')
-    c = conn.cursor()
-    login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute("INSERT INTO login_records (user_id, login_time) VALUES (?, ?)",
-              (user_id, login_time))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    current_time = datetime.now()
+
+    # 기존 로그인 기록 확인
+    cursor.execute("SELECT login_time FROM login_history WHERE user_id = ? ORDER BY login_time ASC", (user_id,))
+    existing_records = cursor.fetchall()
+
+    if not existing_records:
+        # 첫 로그인인 경우
+        cursor.execute("INSERT INTO login_history (user_id, login_time) VALUES (?, ?)", (user_id, current_time))
+    else:
+        # 이미 로그인 기록이 있는 경우
+        first_login = existing_records[0][0]
+        cursor.execute("DELETE FROM login_history WHERE user_id = ?", (user_id,))
+        cursor.execute("INSERT INTO login_history (user_id, login_time) VALUES (?, ?), (?, ?)",
+                       (user_id, first_login, user_id, current_time))
+
     conn.commit()
     conn.close()
-    return login_time
+    return current_time
 
 def update_nickname_copied(user_id):
     conn = sqlite3.connect('zoom_app.db')
@@ -92,12 +105,12 @@ def update_zoom_link_clicked(user_id):
     return time
 
 def get_login_history(user_id):
-    conn = sqlite3.connect('zoom_app.db')
-    c = conn.cursor()
-    c.execute("SELECT login_time FROM login_records WHERE user_id=? ORDER BY login_time", (user_id,))
-    history = c.fetchall()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT login_time FROM login_history WHERE user_id = ? ORDER BY login_time ASC", (user_id,))
+    login_history = cursor.fetchall()
     conn.close()
-    return history
+    return login_history
 
 def get_attendance_report():
     conn = sqlite3.connect('zoom_app.db')
