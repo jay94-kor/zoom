@@ -139,14 +139,14 @@ def admin_page():
             st.write("Detailed Attendance List:")
             
             # 데이터프레임 생성
-            df = pd.DataFrame(report, columns=['Country', 'Name', 'Login Time', 'Nickname Copied', 'Phrase Written', 'Zoom Link Clicked'])
+            df = pd.DataFrame(report, columns=['Country', 'Name', 'First Login', 'Last Login'])
             
-            # 'Login Time'이 None인 행을 맨 위로 정렬
-            df = df.sort_values('Login Time', ascending=True, na_position='first')
+            # 'First Login'이 None인 행을 맨 위로 정렬
+            df = df.sort_values('First Login', ascending=True, na_position='first')
             
             # 스타일 적용
             def highlight_no_login(row):
-                if pd.isnull(row['Login Time']):
+                if pd.isnull(row['First Login']):
                     return ['background-color: yellow'] * len(row)
                 return [''] * len(row)
             

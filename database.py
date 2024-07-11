@@ -113,17 +113,18 @@ def get_login_history(user_id):
     return login_history
 
 def get_attendance_report():
-    conn = sqlite3.connect('zoom_app.db')
-    c = conn.cursor()
-    c.execute('''SELECT u.country, u.name, 
-                 lr.login_time,
-                 lr.nickname_copied,
-                 lr.phrase_written,
-                 lr.zoom_link_clicked
-                 FROM users u
-                 LEFT JOIN login_records lr ON u.id = lr.user_id
-                 ORDER BY lr.login_time DESC''')
-    report = c.fetchall()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT users.country, users.name, 
+               MIN(login_history.login_time) as first_login,
+               MAX(login_history.login_time) as last_login
+        FROM users
+        LEFT JOIN login_history ON users.id = login_history.user_id
+        GROUP BY users.id
+        ORDER BY users.country, users.name
+    """)
+    report = cursor.fetchall()
     conn.close()
     return report
 
